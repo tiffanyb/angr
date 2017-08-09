@@ -650,7 +650,7 @@ class SimMemory(SimStatePlugin):
             return self._store(req)
 
     def load(self, addr, size=None, condition=None, fallback=None, add_constraints=None, action=None, endness=None,
-             inspect=True, disable_actions=False):
+             inspect=True, disable_actions=False, ret_on_segv=False):
         """
         Loads size bytes from dst.
 
@@ -664,6 +664,7 @@ class SimMemory(SimStatePlugin):
         :param bool inspect:    Whether this store should trigger SimInspect breakpoints or not.
         :param bool disable_actions: Whether this store should avoid creating SimActions or not. When set to False,
                                      state options are respected.
+        :param bool ret_on_segv: Whether returns the memory that is already loaded before a segmentation fault is triggered. The default is False.
 
         There are a few possible return values. If no condition or fallback are passed in,
         then the return is the bytes at the address, in the form of a claripy expression.
@@ -712,7 +713,7 @@ class SimMemory(SimStatePlugin):
         ):
             self._constrain_underconstrained_index(addr_e)
 
-        a,r,c = self._load(addr_e, size_e, condition=condition_e, fallback=fallback_e)
+        a,r,c = self._load(addr_e, size_e, condition=condition_e, fallback=fallback_e, ret_on_segv=ret_on_segv)
         add_constraints = self.state._inspect_getattr('address_concretization_add_constraints', add_constraints)
         if add_constraints and c:
             self.state.add_constraints(*c)
